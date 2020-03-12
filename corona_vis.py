@@ -1,7 +1,7 @@
-import dash 
+import dash
 from dash.dependencies import Input, Output
-import dash_core_components as dcc 
-import dash_html_components as html 
+import dash_core_components as dcc
+import dash_html_components as html
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
@@ -19,7 +19,7 @@ for i in datasets:
 
 
 
-# Grouping the data according to the Country/Region 
+# Grouping the data according to the Country/Region
 def transform_pipeline(dataset): # implement arbitrary arugument list in this function for giving dropping columns option
     ds = dataset.drop(columns=['Lat', 'Long', 'Province/State'])
     sum_data = (ds.groupby('Country/Region').sum().reset_index()).T
@@ -29,9 +29,9 @@ def transform_pipeline(dataset): # implement arbitrary arugument list in this fu
 clean_data = []
 for dataset_item in data:
     clean_data.append(transform_pipeline(dataset_item))
-    
-    
-    
+
+
+
 dict_of_changes = {"China":"Mainland China", "Korea, South":"Republic of Korea", "Vietnam":"Viet Nam", 'Iran':'Iran (Islamic Republic of)'
                   , 'United Kingdom':"UK"}
 
@@ -108,7 +108,7 @@ def generate_confirm_graph(selected_dropdown_value):
     layout = dict(title = 'Confirmed Cases Timeline',
                   xaxis = dict(title='Days'),
                   yaxis = dict(title='Number of Confirmed cases'))
-    
+
     figure = dict(data=data, layout=layout)
     return figure
 
@@ -139,7 +139,7 @@ def generate_increment_graph(selected_dropdown_value):
     layout = dict(title = 'Confirmed Cases Increment Timeline',
                   xaxis = dict(title='Days'),
                   yaxis = dict(title='Number of New Confirm cases'))
-    
+
     figure = dict(data=data, layout=layout)
     return figure
 
@@ -148,13 +148,14 @@ def generate_increment_graph(selected_dropdown_value):
 
 @app.callback(Output('pie-graph', 'figure'), [Input('product-dropdown', 'value')])
 def generate_pie_graph(selected_dropdown_value):
+
+
+    selected_countries_filter = clean_data[0][selected_dropdown_value].iloc[-1]
     
-    selected_countries_filter = clean_data[0][selected_dropdown_value].sum()
-    print(selected_countries_filter)
     data = pie_confirmed(selected_countries_filter, selected_dropdown_value)
     layout = dict(title = 'Pie Chart')
     figure = dict(data=data, layout=layout)
-    
+
     return figure
 
 
@@ -180,4 +181,3 @@ def generate_table(selected_dropdown_value, max_rows=20):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
