@@ -79,7 +79,7 @@ app.layout = html.Div([
         html.P('')
     ], style={'width': '20%','margin':'auto','padding-left':'20px', 'display': 'inline-block'}),
     html.Div([
-        html.H3('Pie Chart?'),
+        html.H3('Proportional Graph'),
         dcc.Graph(id='pie-graph')
     ], style={'width': '30%','float':'right', 'display': 'inline-block'}),
     html.Div([
@@ -123,7 +123,8 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
         trace = go.Scatter(
                 y=timeline,
                 x=timeline.index,
-                name=value
+                name=value,
+                mode='lines+markers'
         )
         trace_list.append(trace)
     return trace_list
@@ -151,9 +152,9 @@ def generate_pie_graph(selected_dropdown_value):
 
 
     selected_countries_filter = clean_data[0][selected_dropdown_value].iloc[-1]
-    
+
     data = pie_confirmed(selected_countries_filter, selected_dropdown_value)
-    layout = dict(title = 'Pie Chart')
+    layout = dict(title = 'Pie Chart for proportions')
     figure = dict(data=data, layout=layout)
 
     return figure
