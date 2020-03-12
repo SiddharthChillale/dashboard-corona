@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 
 app = dash.Dash(__name__)
 server = app.server
-
+# app.title = 'COVID-19 Visualization'
 
 datasets = ['./dataset/time_series_19-covid-Confirmed.csv', './dataset/time_series_19-covid-Deaths.csv', './dataset/time_series_19-covid-Recovered.csv']
 
