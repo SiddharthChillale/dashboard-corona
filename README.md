@@ -13,3 +13,5 @@ Dashboard for visualising the reach of COVID-19 throughout the world in the moth
 - Optimise the code
 - Organise the codebase
 - Mine for more data and more analyses
+- Setup handles for error handling or any other discrepancies (by email, or notifications)
+- Have a 404 page |
