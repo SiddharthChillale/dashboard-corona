@@ -5,6 +5,7 @@ import dash_html_components as html
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
+import live_data
 
 app = dash.Dash(__name__)
 server = app.server
@@ -32,13 +33,13 @@ for dataset_item in data:
 
 
 
-dict_of_changes = {"China":"Mainland China", "Korea, South":"Republic of Korea", "Vietnam":"Viet Nam", 'Iran':'Iran (Islamic Republic of)'
-                  , 'United Kingdom':"UK"}
-
-for key, val in dict_of_changes.items():
-    for idx in range(3):
-        clean_data[idx][key] = clean_data[idx][val] + clean_data[idx][key]
-        clean_data[idx].drop(columns=val, inplace=True)
+# dict_of_changes = {"China":"Mainland China", "Korea, South":"Republic of Korea", "Vietnam":"Viet Nam", 'Iran':'Iran (Islamic Republic of)'
+#                   , 'United Kingdom':"UK"}
+#
+# for key, val in dict_of_changes.items():
+#     for idx in range(3):
+#         clean_data[idx][key] = clean_data[idx][val] + clean_data[idx][key]
+#         clean_data[idx].drop(columns=val, inplace=True)
 
 new_cases = pd.DataFrame({"Confirmed": clean_data[0].iloc[-1]  - clean_data[0].iloc[-2],
                "Deaths": clean_data[1].iloc[-1]  - clean_data[1].iloc[-2],
