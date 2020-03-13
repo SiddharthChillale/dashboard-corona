@@ -1,14 +1,24 @@
 import schedule
 import time
 import os
+from datetime import datetime
+
+# datetime object containing current date and time
+now = datetime.now()
+# dd/mm/YY H:M:S
+
+
+print("Initiated at = ",now.strftime("%d/%m/%Y %H:%M:%S"))
 
 def job():
-    print("\tRunning script now...\n")
+    now = datetime.now()
+    print("\n\tRunning script now at...\t", now.strftime("%d/%m/%Y %H:%M:%S"))
     # print("Script run for ", num_of_runs, " times")
-    os.system("python run_app.py")
+
+    os.system("python corona_vis.py")
     print("\n\tNext Script run in 12 hours\n")
 # schedule.every(1).minutes.do(job)
-schedule.every(1).hours.do(job)
+schedule.every(5).minutes.do(job)
 
 while True:
     schedule.run_pending()
