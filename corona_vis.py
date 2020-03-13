@@ -182,4 +182,4 @@ def generate_table(selected_dropdown_value, max_rows=20):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
