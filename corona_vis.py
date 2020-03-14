@@ -5,7 +5,9 @@ import dash_html_components as html
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
-import live_data
+import os
+
+os.system("python live_data.py")
 
 app = dash.Dash(__name__)
 server = app.server
@@ -16,7 +18,7 @@ datasets = ['./dataset/time_series_19-covid-Confirmed.csv', './dataset/time_seri
 data = []
 for i in datasets:
 #     data.append(pd.read_csv('./COVID-19/csse_covid_19_data/csse_covid_19_time_series/'+i))
-    data.append(pd.read_csv('./' + i))
+    data.append(pd.read_csv(i))
 
 
 
@@ -81,18 +83,30 @@ app.layout = html.Div([
     ], style={'width': '20%','margin':'auto','padding-left':'20px', 'display': 'inline-block'}),
     html.Div([
         html.H3('Proportional Graph'),
-        dcc.Graph(id='pie-graph')
+        dcc.Graph(id='pie-graph', animate=True),
+        dcc.Interval(
+            id='live-update-pie',
+            interval=100*1000
+        ),
     ], style={'width': '30%','float':'right', 'display': 'inline-block'}),
     html.Div([
         html.H3('Total Confirmed Cases '),
-        dcc.Graph(id='confirmed-trend-graph'),
+        dcc.Graph(id='confirmed-trend-graph', animate=True),
+        dcc.Interval(
+            id='live-update-trend',
+            interval=100*1000
+        ),
         html.P('')
     ], style={'width': '100%',
               'display': 'inline-block',
               'border-top':'1px dashed grey'}),
     html.Div([
         html.H3('How much Confirmed cases increase daily ?'),
-        dcc.Graph(id='increment-trend-graph'),
+        dcc.Graph(id='increment-trend-graph',  animate=True),
+        dcc.Interval(
+            id='live-update-inc',
+            interval=100*1000
+        ),
         html.P('')
     ], style={'width': '100%',
               'display': 'inline-block',
@@ -100,7 +114,7 @@ app.layout = html.Div([
     ])
 
 
-@app.callback(Output('confirmed-trend-graph', 'figure'), [Input('product-dropdown', 'value')])
+@app.callback(Output('confirmed-trend-graph', 'figure'), [Input('product-dropdown', 'value'), Input('live-update-trend', 'interval')])
 def generate_confirm_graph(selected_dropdown_value):
     confirmed_filter = clean_data[0][selected_dropdown_value]
 
@@ -130,7 +144,7 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
         trace_list.append(trace)
     return trace_list
 
-@app.callback(Output('increment-trend-graph', 'figure'), [Input('product-dropdown', 'value')])
+@app.callback(Output('increment-trend-graph', 'figure'), [Input('product-dropdown', 'value'), Input('live-update-inc', 'interval')])
 def generate_increment_graph(selected_dropdown_value):
     confirmed_delta = clean_data[0].diff()
     confirmed_delta.iloc[0] = 0
@@ -148,7 +162,7 @@ def generate_increment_graph(selected_dropdown_value):
 
 
 
-@app.callback(Output('pie-graph', 'figure'), [Input('product-dropdown', 'value')])
+@app.callback(Output('pie-graph', 'figure'), [Input('product-dropdown', 'value'), Input('live-update-pie', 'interval')])
 def generate_pie_graph(selected_dropdown_value):
 
 
@@ -182,4 +196,4 @@ def generate_table(selected_dropdown_value, max_rows=20):
 
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
