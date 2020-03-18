@@ -1,1 +1,1 @@
-web: gunicorn run_app:server
+web: gunicorn corona_vis:server
