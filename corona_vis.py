@@ -7,9 +7,8 @@ import numpy as np
 import plotly.graph_objs as go
 import os
 from datetime import datetime
-
-
-print(":: Outside in the main now ::")
+# import live_data
+print("\n:: Outside in the main now ::")
 
 app = dash.Dash(__name__)
 server = app.server
@@ -29,7 +28,7 @@ def get_clean_data():
         data.append(pd.read_csv(i))
 
 
-# Grouping the data according to the Country/Region
+    # Grouping the data according to the Country/Region
     def transform_pipeline(dataset): # implement arbitrary arugument list in this function for giving dropping columns option
         ds = dataset.drop(columns=['Lat', 'Long', 'Province/State'])
         sum_data = (ds.groupby('Country/Region').sum().reset_index()).T
@@ -43,13 +42,7 @@ def get_clean_data():
     return clean_data
 
 
-# dict_of_changes = {"China":"Mainland China", "Korea, South":"Republic of Korea", "Vietnam":"Viet Nam", 'Iran':'Iran (Islamic Republic of)'
-#                   , 'United Kingdom':"UK"}
-#
-# for key, val in dict_of_changes.items():
-#     for idx in range(3):
-#         clean_data[idx][key] = clean_data[idx][val] + clean_data[idx][key]
-#         clean_data[idx].drop(columns=val, inplace=True)
+
 def get_new_cases():
     now = datetime.now()
 
@@ -89,25 +82,33 @@ app.layout = html.Div([
         ),
         dcc.Interval(
             id='timer-updater',
-            interval = 20*1000,
+            interval = 43200*1000,
             n_intervals=0
         )
 
-    ], style={'width': '40%','float':'left','padding':'20px',
-              'display': 'inline-block','padding-right':'20px'}),
+    ], style={'width': '50%',
+              'display': 'inline-block',
+              "padding":'20px',
+              'border-top':'1px dashed grey'}),
+
     html.Div([
-        html.H3('Cases in 24hrs'),
-        html.Table(id='my-table'),
-        html.P('')
-    ], style={'width': '20%','margin':'auto','padding-left':'20px', 'display': 'inline-block'}),
-    html.Div([
-        html.H3('Proportional Graph'),
-        dcc.Graph(id='pie-graph', animate=False),
-        dcc.Interval(
-            id='live-update-pie',
-            interval=10*1000
-        ),
-    ], style={'width': '30%','float':'right', 'display': 'inline-block'}),
+        html.Div([
+            html.H3('Proportional Graph'),
+            dcc.Graph(id='pie-graph', animate=False),
+            dcc.Interval(
+                id='live-update-pie',
+                interval=10*1000
+                ),
+        ], style={'width': '50%','float':'left', 'display': 'inline'}),
+        html.Div([
+            html.H3('Cases in 24hrs'),
+            html.Table(id='my-table'),
+            html.P('')
+        ], style={'width': '50%','margin':'20px', 'display': 'inline'})
+        ],style={'width': '100%',
+              'display': 'inline-block',
+              'border-top':'1px dashed grey'}),
+
     html.Div([
         html.H3('Total Confirmed Cases '),
         dcc.Graph(id='confirmed-trend-graph', animate=False),
@@ -120,6 +121,7 @@ app.layout = html.Div([
     ], style={'width': '100%',
               'display': 'inline-block',
               'border-top':'1px dashed grey'}),
+              
     html.Div([
         html.H3('How much Confirmed cases increase daily ?'),
         dcc.Graph(id='increment-trend-graph',  animate=False),
@@ -235,8 +237,13 @@ def data_changer(n):
     os.system("python live_data.py")
     print("\n:: Data Updated ...", now.strftime("%d/%m/%Y %H:%M:%S"), "::")
 
-    
-    return n
+
+    return [
+        html.Div([
+            html.H2('Last updated : ' + now.strftime("%d/%m/%Y %H:%M:%S")),
+            html.H3('Updates every 12 hours')
+            ])
+        ]
 
 if __name__ == '__main__':
     app.run_server(debug=True)
