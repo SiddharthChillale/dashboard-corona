@@ -1,2 +1,4 @@
 dashenv/*
 .vscode/*
+__pycache__/*
+*.tmp
