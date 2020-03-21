@@ -15,7 +15,6 @@ server = app.server
 # app.title = 'COVID-19 Visualization'
 
 
-
 def get_clean_data():
     now = datetime.now()
 
@@ -48,7 +47,7 @@ def get_new_cases():
 
     
     print(":: Getting new cases ...", now.strftime("%d/%m/%Y %H:%M:%S"))
-    clean_data = get_clean_data()
+    clean_data = get_clean_data() ## get clean_data dataframe here
     new_cases = pd.DataFrame({"Confirmed": clean_data[0].iloc[-1]  - clean_data[0].iloc[-2],
                 "Deaths": clean_data[1].iloc[-1]  - clean_data[1].iloc[-2],
                 "Recovered": clean_data[2].iloc[-1]  - clean_data[2].iloc[-2]})
@@ -57,15 +56,17 @@ def get_new_cases():
 
 def create_dict_list_of_product():
     dictlist = []
-    new_cases = get_new_cases()
+    new_cases = get_new_cases() ## get new cases here
     unique_list = new_cases.index.unique()
     for product_title in unique_list:
         dictlist.append({'value': product_title, 'label': product_title})
     return dictlist
 
 
+CLEAN_DATA = get_clean_data()
+NEW_CASES = get_new_cases()
 dict_products = create_dict_list_of_product()
-initial_val = get_new_cases().sort_values(by="Confirmed", ascending=False).head(5).index
+initial_val = NEW_CASES.sort_values(by="Confirmed", ascending=False).head(5).index
 
 
 app.layout = html.Div([
@@ -141,7 +142,7 @@ app.layout = html.Div([
              [Input('product-dropdown', 'value')])
 def generate_confirm_graph(selected_dropdown_value):
     print("\nFor confirm-graph")
-    clean_data = get_clean_data()
+    clean_data = CLEAN_DATA.copy()
     confirmed_filter = clean_data[0][selected_dropdown_value]
 
     data = timeline_confirmed(confirmed_filter, selected_dropdown_value)
@@ -175,7 +176,7 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
 def generate_increment_graph(selected_dropdown_value):
     print("\nFor increment-trend-graph")
 
-    clean_confirm_data = get_clean_data()
+    clean_confirm_data = CLEAN_DATA.copy()
     confirmed_delta = clean_confirm_data[0].diff()
     confirmed_delta.iloc[0] = 0
     confirmed_delta_filter = confirmed_delta[selected_dropdown_value]
@@ -194,9 +195,11 @@ def generate_increment_graph(selected_dropdown_value):
 
 @app.callback(Output('pie-graph', 'figure'), [Input('product-dropdown', 'value')])
 def generate_pie_graph(selected_dropdown_value):
+    print("#################################################")
+
     print("\nFor pie-graph")
 
-    clean_data = get_clean_data()
+    clean_data = CLEAN_DATA.copy()
     selected_countries_filter = clean_data[0][selected_dropdown_value].iloc[-1]
 
     data = pie_confirmed(selected_countries_filter, selected_dropdown_value)
@@ -217,7 +220,7 @@ def pie_confirmed(selected_countries_filter, selected_dropdown_value):
 
 @app.callback(Output('my-table', 'children'), [Input('product-dropdown', 'value')])
 def generate_table(selected_dropdown_value, max_rows=20):
-    new_cases = get_new_cases()
+    new_cases = NEW_CASES.copy()
     new_cases_ff = new_cases.reset_index().set_index('index', drop=False)
     new_cases_filter = new_cases_ff.loc[selected_dropdown_value]
     new_cases_filter = new_cases_filter.sort_values(by='Confirmed', ascending=False)
@@ -232,11 +235,15 @@ def generate_table(selected_dropdown_value, max_rows=20):
 def data_changer(n):
     now = datetime.now()
   
+    print("\n:: Downloading ...")
     
-    print("\nData Changing for ", n, " times")
+    # print("\nData Changing for ", n, " times")
     os.system("python live_data.py")
-    print("\n:: Data Updated ...", now.strftime("%d/%m/%Y %H:%M:%S"), "::")
 
+    print("\n:: Reading from datafiles ...", now.strftime("%d/%m/%Y %H:%M:%S"), "::")
+
+    CLEAN_DATA = get_clean_data()
+    NEW_CASES = get_new_cases()
 
     return [
         html.Div([
