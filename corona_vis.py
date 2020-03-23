@@ -7,6 +7,7 @@ import numpy as np
 import plotly.graph_objs as go
 import os
 from datetime import datetime
+
 # import live_data
 print("\n:: Outside in the main now ::")
 
@@ -95,11 +96,7 @@ app.layout = html.Div([
     html.Div([
         html.Div([
             html.H3('Proportional Graph'),
-            dcc.Graph(id='pie-graph', animate=False),
-            dcc.Interval(
-                id='live-update-pie',
-                interval=10*1000
-                ),
+            dcc.Graph(id='pie-graph')
         ], style={'width': '50%','float':'left', 'display': 'inline'}),
         html.Div([
             html.H3('Cases in 24hrs'),
@@ -112,12 +109,7 @@ app.layout = html.Div([
 
     html.Div([
         html.H3('Total Confirmed Cases '),
-        dcc.Graph(id='confirmed-trend-graph', animate=False),
-        dcc.Interval(
-            id='live-update-trend',
-            interval = 10*1000,
-            n_intervals=0
-        ),
+        dcc.Graph(id='confirmed-trend-graph'),
         html.P('')
     ], style={'width': '100%',
               'display': 'inline-block',
@@ -125,12 +117,15 @@ app.layout = html.Div([
               
     html.Div([
         html.H3('How much Confirmed cases increase daily ?'),
-        dcc.Graph(id='increment-trend-graph',  animate=False),
-        dcc.Interval(
-            id='live-update-inc',
-            interval = 10*1000,
-            n_intervals=0
-        ),
+        dcc.Graph(id='increment-trend-graph'),
+        html.P('')
+    ], style={'width': '100%',
+              'display': 'inline-block',
+              'border-top':'1px dashed grey'}),
+              
+    html.Div([
+        html.H3('Death counts'),
+        dcc.Graph(id='confirmed-death-graph'),
         html.P('')
     ], style={'width': '100%',
               'display': 'inline-block',
@@ -141,7 +136,7 @@ app.layout = html.Div([
 @app.callback(Output('confirmed-trend-graph', 'figure'),
              [Input('product-dropdown', 'value')])
 def generate_confirm_graph(selected_dropdown_value):
-    print("\nFor confirm-graph")
+    print("\n::For confirm-graph")
     clean_data = CLEAN_DATA.copy()
     confirmed_filter = clean_data[0][selected_dropdown_value]
 
@@ -154,6 +149,21 @@ def generate_confirm_graph(selected_dropdown_value):
     figure = dict(data=data, layout=layout)
     return figure
 
+@app.callback(Output('confirmed-death-graph', 'figure'),
+             [Input('product-dropdown', 'value')])
+def generate_confirm_graph(selected_dropdown_value):
+    print("\n::For confirm-graph")
+    clean_data = CLEAN_DATA.copy()
+    death_filter = clean_data[1][selected_dropdown_value]
+
+    data = timeline_confirmed(death_filter, selected_dropdown_value)
+
+    layout = dict(title = 'Confirmed Cases Timeline',
+                  xaxis = dict(title='Days'),
+                  yaxis = dict(title='Number of Confirmed cases'))
+
+    figure = dict(data=data, layout=layout)
+    return figure
 
 
 
@@ -174,7 +184,7 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
 @app.callback(Output('increment-trend-graph', 'figure'),
              [Input('product-dropdown', 'value')])
 def generate_increment_graph(selected_dropdown_value):
-    print("\nFor increment-trend-graph")
+    print("\n:: For increment-trend-graph")
 
     clean_confirm_data = CLEAN_DATA.copy()
     confirmed_delta = clean_confirm_data[0].diff()
@@ -197,7 +207,7 @@ def generate_increment_graph(selected_dropdown_value):
 def generate_pie_graph(selected_dropdown_value):
     print("#################################################")
 
-    print("\nFor pie-graph")
+    print("\n:: For pie-graph")
 
     clean_data = CLEAN_DATA.copy()
     selected_countries_filter = clean_data[0][selected_dropdown_value].iloc[-1]
@@ -235,7 +245,7 @@ def generate_table(selected_dropdown_value, max_rows=20):
 def data_changer(n):
     now = datetime.now()
   
-    print("\n:: Downloading ...")
+    print("\n:: Downloading ...") 
     
     # print("\nData Changing for ", n, " times")
     os.system("python live_data.py")
