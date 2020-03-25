@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 import os
 from datetime import datetime
 
-# import live_data
+import live_data
 print("\n:: Outside in the main now ::")
 
 app = dash.Dash(__name__)
@@ -20,7 +20,10 @@ def get_clean_data():
     now = datetime.now()
 
     print("\n:: Getting clean data ...", now.strftime("%d/%m/%Y %H:%M:%S"))
-    datasets = ['./dataset/time_series_19-covid-Confirmed.csv', './dataset/time_series_19-covid-Deaths.csv', './dataset/time_series_19-covid-Recovered.csv']
+    # datasets = ['./dataset/time_series_19-covid-Confirmed.csv', './dataset/time_series_19-covid-Deaths.csv', './dataset/time_series_19-covid-Recovered.csv']
+
+    datasets = ["./dataset/time_series_covid19_confirmed_global.csv",
+         "./dataset/time_series_covid19_deaths_global.csv"]
 
     data = []
     for i in datasets:
@@ -50,8 +53,7 @@ def get_new_cases():
     print(":: Getting new cases ...", now.strftime("%d/%m/%Y %H:%M:%S"))
     clean_data = get_clean_data() ## get clean_data dataframe here
     new_cases = pd.DataFrame({"Confirmed": clean_data[0].iloc[-1]  - clean_data[0].iloc[-2],
-                "Deaths": clean_data[1].iloc[-1]  - clean_data[1].iloc[-2],
-                "Recovered": clean_data[2].iloc[-1]  - clean_data[2].iloc[-2]})
+                "Deaths": clean_data[1].iloc[-1]  - clean_data[1].iloc[-2]})
 
     return new_cases
 
@@ -108,7 +110,7 @@ app.layout = html.Div([
               'border-top':'1px dashed grey'}),
 
     html.Div([
-        html.H3('Total Confirmed Cases '),
+        html.H3('Total Confirmed Cases over 3 weeks'),
         dcc.Graph(id='confirmed-trend-graph'),
         html.P('')
     ], style={'width': '100%',
@@ -124,7 +126,7 @@ app.layout = html.Div([
               'border-top':'1px dashed grey'}),
               
     html.Div([
-        html.H3('Death counts'),
+        html.H3('Death counts over 3 weeks'),
         dcc.Graph(id='confirmed-death-graph'),
         html.P('')
     ], style={'width': '100%',
@@ -156,7 +158,7 @@ def generate_confirm_graph(selected_dropdown_value):
     clean_data = CLEAN_DATA.copy()
     death_filter = clean_data[1][selected_dropdown_value]
 
-    data = timeline_confirmed(death_filter, selected_dropdown_value)
+    data = timeline_death(death_filter, selected_dropdown_value)
 
     layout = dict(title = 'Confirmed Cases Timeline',
                   xaxis = dict(title='Days'),
@@ -173,13 +175,31 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
         timeline = timeline_data[value]
 
         trace = go.Scatter(
-                y=timeline.tail(20),
-                x=timeline.tail(20).index,
+                y=timeline.tail(21),
+                x=timeline.tail(21).index,
                 name=value,
                 mode='lines+markers'
         )
         trace_list.append(trace)
     return trace_list
+
+
+
+def timeline_death(timeline_data, selected_dropdown_value):
+    trace_list = []
+    for value in selected_dropdown_value:
+        timeline = timeline_data[value]
+
+        trace = go.Scatter(
+                y=timeline.tail(21),
+                x=timeline.tail(21).index,
+                fill='tonexty',
+                name=value,
+                mode='lines+markers'
+        )
+        trace_list.append(trace)
+    return trace_list
+
 
 @app.callback(Output('increment-trend-graph', 'figure'),
              [Input('product-dropdown', 'value')])
