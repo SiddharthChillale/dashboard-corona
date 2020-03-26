@@ -1,6 +1,7 @@
 import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 import pandas as pd
 import numpy as np
@@ -11,7 +12,8 @@ from datetime import datetime
 import live_data
 print("\n:: Outside in the main now ::")
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__,
+                external_stylesheets=[dbc.themes.DARKLY])
 server = app.server
 # app.title = 'COVID-19 Visualization'
 
@@ -132,7 +134,8 @@ app.layout = html.Div([
     ], style={'width': '100%',
               'display': 'inline-block',
               'border-top':'1px dashed grey'})
-    ])
+    ], 
+    className="p-5")
 
 
 @app.callback(Output('confirmed-trend-graph', 'figure'),
@@ -145,6 +148,11 @@ def generate_confirm_graph(selected_dropdown_value):
     data = timeline_confirmed(confirmed_filter, selected_dropdown_value)
 
     layout = dict(title = 'Confirmed Cases Timeline',
+                  paper_bgcolor = 'rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)',
+                  font= {
+                    'color': '#ffffff'
+                },
                   xaxis = dict(title='Days'),
                   yaxis = dict(title='Number of Confirmed cases'))
 
@@ -161,6 +169,11 @@ def generate_confirm_graph(selected_dropdown_value):
     data = timeline_death(death_filter, selected_dropdown_value)
 
     layout = dict(title = 'Confirmed Cases Timeline',
+                  paper_bgcolor = 'rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)',
+                  font= {
+                    'color': '#ffffff'
+                },
                   xaxis = dict(title='Days'),
                   yaxis = dict(title='Number of Confirmed cases'))
 
@@ -193,7 +206,7 @@ def timeline_death(timeline_data, selected_dropdown_value):
         trace = go.Scatter(
                 y=timeline.tail(21),
                 x=timeline.tail(21).index,
-                fill='tonexty',
+                fill='tozerox',
                 name=value,
                 mode='lines+markers'
         )
@@ -214,6 +227,11 @@ def generate_increment_graph(selected_dropdown_value):
     data = timeline_confirmed(confirmed_delta_filter, selected_dropdown_value)
 
     layout = dict(title = 'Confirmed Cases Increment Timeline',
+                  paper_bgcolor = 'rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)',
+                  font= {
+                    'color': '#ffffff'
+                },
                   xaxis = dict(title='Days'),
                   yaxis = dict(title='Number of New Confirm cases'))
 
@@ -233,7 +251,12 @@ def generate_pie_graph(selected_dropdown_value):
     selected_countries_filter = clean_data[0][selected_dropdown_value].iloc[-1]
 
     data = pie_confirmed(selected_countries_filter, selected_dropdown_value)
-    layout = dict(title = 'Pie Chart for proportions')
+    layout = dict(title = 'Pie Chart for proportions',
+                  paper_bgcolor = 'rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)',
+                  font= {
+                    'color': '#ffffff'
+                },)
     figure = dict(data=data, layout=layout)
 
     return figure
