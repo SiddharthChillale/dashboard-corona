@@ -8,12 +8,10 @@ now = datetime.now()
 # dd/mm/YY H:M:S
 
 
-print("::Running data update ... ",now.strftime("%d/%m/%Y %H:%M:%S"))
+print(":: Running data update ... ",now.strftime("%d/%m/%Y %H:%M:%S"))
 output_directory="./dataset"
 
-files = ["/time_series_19-covid-Confirmed.csv",
-         "/time_series_19-covid-Deaths.csv",
-         "/time_series_19-covid-Recovered.csv"]
+files = ["/time_series_covid19_confirmed_global.csv", "/time_series_covid19_deaths_global.csv"]
          
 
 for x in files:
@@ -23,6 +21,7 @@ for x in files:
         print(final)
         wget.download("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"+x, out=output_directory)
     except:
+        wget.download("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"+x, out=output_directory)
         print("::File (", x, ") not present")
 
 
