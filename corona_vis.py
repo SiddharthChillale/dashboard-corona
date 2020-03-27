@@ -103,7 +103,7 @@ app.layout = html.Div([
 
 
     html.Div([
-        html.H2("Compare here", className='card-header'),
+        html.H2("Compare here", className='card-header  '),
         dcc.Dropdown(
             id='product-dropdown',
             options=dict_products,
@@ -368,4 +368,4 @@ def data_changer(n):
         ]
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
