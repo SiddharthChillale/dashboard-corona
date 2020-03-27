@@ -13,7 +13,7 @@ import live_data
 print("\n:: Outside in the main now ::")
 
 app = dash.Dash(__name__,
-                external_stylesheets=[dbc.themes.DARKLY])
+                external_stylesheets=[dbc.themes.LUX])
 server = app.server
 # app.title = 'COVID-19 Visualization'
 
@@ -76,66 +76,84 @@ initial_val = NEW_CASES.sort_values(by="Confirmed", ascending=False).head(5).ind
 
 app.layout = html.Div([
     html.Div([
-        html.H1('New Cases in the World'),
-        html.H2('Choose a country'),
+        html.H1('New Cases in the World',
+                className='navbar-brand '),
         html.Div(id='timer',
-                 children= 0),
-        dcc.Dropdown(
-            id='product-dropdown',
-            options=dict_products,
-            multi=True,
-            value = initial_val
-        ),
+                 children= 0, 
+                 className='nav-item'),
+        html.Div([
+            html.A('Github', href='https://github.com/SiddharthChillale/dashboard-corona', className='text-info')
+        ], className='nav-item'),
+        html.Div([
+            html.A('Data-Source', href='https://github.com/CSSEGISandData/COVID-19', className='text-info')
+        ], className='nav-item'),
         dcc.Interval(
             id='timer-updater',
             interval = 43200*1000,
             n_intervals=0
         )
 
-    ], style={'width': '50%',
-              'display': 'inline-block',
-              "padding":'20px',
-              'border-top':'1px dashed grey'}),
+    ], className='navbar navbar-expand-lg navbar-dark bg-primary'),
 
+    html.Div(
+        id='world-statistics',
+        children = 0,
+        className='p-1'
+    ),
+
+
+    html.Div([
+        html.H2("Compare here", className='card-header  '),
+        dcc.Dropdown(
+            id='product-dropdown',
+            options=dict_products,
+            optionHeight=50,
+            multi=True,
+            value = initial_val,
+            persistence=True,
+            placeholder="Select countries to compare",
+            className=" card-body text-primary "
+        )
+    ], className='form-group card border-success', style={'margin-top':'20px'}),
     html.Div([
         html.Div([
             html.H3('Proportional Graph'),
             dcc.Graph(id='pie-graph')
-        ], style={'width': '50%','float':'left', 'display': 'inline'}),
+        ], style={'float':'left', 'width':'100%'}),
+
         html.Div([
             html.H3('Cases in 24hrs'),
-            html.Table(id='my-table'),
-            html.P('')
-        ], style={'width': '50%','margin':'20px', 'display': 'inline'})
-        ],style={'width': '100%',
-              'display': 'inline-block',
-              'border-top':'1px dashed grey'}),
+            html.Table(id='my-table',
+                       className='table table-hover')
+        ])
+        ]),
 
     html.Div([
-        html.H3('Total Confirmed Cases over 3 weeks'),
-        dcc.Graph(id='confirmed-trend-graph'),
-        html.P('')
-    ], style={'width': '100%',
-              'display': 'inline-block',
-              'border-top':'1px dashed grey'}),
+        html.H3('Total Confirmed Cases over 3 weeks',
+                className='card-header'),
+        html.Div([
+            dcc.Graph(id='confirmed-trend-graph')
+        ],className='card-body')
+        
+    ], className="card border-primary mb-3"),
               
+
     html.Div([
-        html.H3('How much Confirmed cases increase daily ?'),
-        dcc.Graph(id='increment-trend-graph'),
-        html.P('')
-    ], style={'width': '100%',
-              'display': 'inline-block',
-              'border-top':'1px dashed grey'}),
-              
-    html.Div([
-        html.H3('Death counts over 3 weeks'),
+        html.H3('Death counts over 3 weeks', className = 'card-header'),
+        html.Div([
+
         dcc.Graph(id='confirmed-death-graph'),
-        html.P('')
-    ], style={'width': '100%',
-              'display': 'inline-block',
-              'border-top':'1px dashed grey'})
-    ], 
-    className="p-5")
+        ],className='card-body')
+
+    ], className="card border-danger mb-3"),
+    html.Div([
+        html.H3('How much Confirmed cases increase daily ?', className = 'card-header'),
+        html.Div([
+        dcc.Graph(id='increment-trend-graph')
+        ],className='card-body')
+
+    ], className="card border-info text-white bg-primary mb-3")
+    ], className="p-3")
 
 
 @app.callback(Output('confirmed-trend-graph', 'figure'),
@@ -151,7 +169,7 @@ def generate_confirm_graph(selected_dropdown_value):
                   paper_bgcolor = 'rgba(0,0,0,0)',
                   plot_bgcolor='rgba(0,0,0,0)',
                   font= {
-                    'color': '#ffffff'
+                    'color': '#000000'
                 },
                   xaxis = dict(title='Days'),
                   yaxis = dict(title='Number of Confirmed cases'))
@@ -172,7 +190,7 @@ def generate_confirm_graph(selected_dropdown_value):
                   paper_bgcolor = 'rgba(0,0,0,0)',
                   plot_bgcolor='rgba(0,0,0,0)',
                   font= {
-                    'color': '#ffffff'
+                    'color': '#000000'
                 },
                   xaxis = dict(title='Days'),
                   yaxis = dict(title='Number of Confirmed cases'))
@@ -192,6 +210,23 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
                 x=timeline.tail(21).index,
                 name=value,
                 mode='lines+markers'
+        )
+        trace_list.append(trace)
+    return trace_list
+
+def timeline_increment(timeline_data, selected_dropdown_value):
+    trace_list = []
+    for value in selected_dropdown_value:
+        timeline = timeline_data[value]
+
+        trace = go.Scatter(
+                y=timeline.tail(21),
+                x=timeline.tail(21).index,
+                name=value,
+                mode='lines+markers',
+                line=dict(
+                    width=5
+                )
         )
         trace_list.append(trace)
     return trace_list
@@ -224,7 +259,7 @@ def generate_increment_graph(selected_dropdown_value):
     confirmed_delta.iloc[0] = 0
     confirmed_delta_filter = confirmed_delta[selected_dropdown_value]
 
-    data = timeline_confirmed(confirmed_delta_filter, selected_dropdown_value)
+    data = timeline_increment(confirmed_delta_filter, selected_dropdown_value)
 
     layout = dict(title = 'Confirmed Cases Increment Timeline',
                   paper_bgcolor = 'rgba(0,0,0,0)',
@@ -232,7 +267,9 @@ def generate_increment_graph(selected_dropdown_value):
                   font= {
                     'color': '#ffffff'
                 },
-                  xaxis = dict(title='Days'),
+                  xaxis = dict(title='Days',
+                               showgrid=False
+                                ),
                   yaxis = dict(title='Number of New Confirm cases'))
 
     figure = dict(data=data, layout=layout)
@@ -255,7 +292,7 @@ def generate_pie_graph(selected_dropdown_value):
                   paper_bgcolor = 'rgba(0,0,0,0)',
                   plot_bgcolor='rgba(0,0,0,0)',
                   font= {
-                    'color': '#ffffff'
+                    'color': '#000000'
                 },)
     figure = dict(data=data, layout=layout)
 
@@ -278,9 +315,34 @@ def generate_table(selected_dropdown_value, max_rows=20):
     new_cases_filter = new_cases_ff.loc[selected_dropdown_value]
     new_cases_filter = new_cases_filter.sort_values(by='Confirmed', ascending=False)
     # print(new_cases_filter)
-    return [html.Tr([html.Th(col) for col in new_cases_filter.columns])] + [html.Tr([
+    return [html.Tr([html.Th(col) for col in new_cases_filter.columns], className='table-info')] + [html.Tr([
         html.Td(new_cases_filter.iloc[i][col]) for col in new_cases_filter.columns
-    ]) for i in range(min(len(new_cases_filter), max_rows))]
+    ], className='table-secondary') for i in range(min(len(new_cases_filter), max_rows))]
+
+
+
+
+
+@app.callback(Output('world-statistics', 'children'), 
+              [Input('timer-updater', 'n_intervals')])
+def get_world_stat(n):
+    
+    total_data = CLEAN_DATA.copy()
+    affected_total = total_data[0].sum().sum() 
+    deaths_total = total_data[1].sum().sum()
+    percent = (deaths_total / affected_total ) *100
+    return [
+        html.Div([
+            html.H3('Total Confirmed Cases Worldwide :' + str(affected_total)  ,className='badge badge-info p-2'),
+            html.H3('Total Deaths Cases Worldwide :' + str(deaths_total) ,className='badge badge-danger p-2 '),
+            html.Div([
+                html.Div(className='progress-bar bg-danger', style={"width":percent}),
+                html.Div(className='progress-bar bg-info', style={"width":'75%'})                
+            ], className='progress')
+            ])
+        ]
+
+
 
 
 @app.callback(Output('timer', 'children'), 
@@ -300,10 +362,10 @@ def data_changer(n):
 
     return [
         html.Div([
-            html.H2('Last updated : ' + now.strftime("%d/%m/%Y %H:%M:%S")),
-            html.H3('Updates every 12 hours')
+            html.H6('Last updated : ' + now.strftime("%d/%m/%Y %H:%M:%S"),className='text-success'),
+            html.H6('Updates every 12 hours',className='text-info')
             ])
         ]
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
