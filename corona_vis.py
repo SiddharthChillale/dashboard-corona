@@ -25,7 +25,8 @@ def get_clean_data():
     # datasets = ['./dataset/time_series_19-covid-Confirmed.csv', './dataset/time_series_19-covid-Deaths.csv', './dataset/time_series_19-covid-Recovered.csv']
 
     datasets = ["./dataset/time_series_covid19_confirmed_global.csv",
-         "./dataset/time_series_covid19_deaths_global.csv"]
+         "./dataset/time_series_covid19_deaths_global.csv",
+         "./dataset/time_series_covid19_recovered_global.csv"]
 
     data = []
     for i in datasets:
@@ -55,7 +56,8 @@ def get_new_cases():
     print(":: Getting new cases ...", now.strftime("%d/%m/%Y %H:%M:%S"))
     clean_data = get_clean_data() ## get clean_data dataframe here
     new_cases = pd.DataFrame({"Confirmed": clean_data[0].iloc[-1]  - clean_data[0].iloc[-2],
-                "Deaths": clean_data[1].iloc[-1]  - clean_data[1].iloc[-2]})
+                "Deaths": clean_data[1].iloc[-1]  - clean_data[1].iloc[-2],
+                "Recovered": clean_data[2].iloc[-1]  - clean_data[2].iloc[-2],})
 
     return new_cases
 
@@ -241,7 +243,7 @@ def timeline_death(timeline_data, selected_dropdown_value):
         trace = go.Scatter(
                 y=timeline.tail(21),
                 x=timeline.tail(21).index,
-                fill='tozerox',
+                fill='tozeroy',
                 name=value,
                 mode='lines+markers'
         )
@@ -330,14 +332,19 @@ def get_world_stat(n):
     total_data = CLEAN_DATA.copy()
     affected_total = total_data[0].sum().sum() 
     deaths_total = total_data[1].sum().sum()
-    percent = (deaths_total / affected_total ) *100
+    recov_total = total_data[2].sum().sum()
+
+    recov_percent = (recov_total / affected_total ) *100
+    death_percent = (deaths_total / affected_total ) *100
     return [
         html.Div([
             html.H3('Total Confirmed Cases Worldwide :' + str(affected_total)  ,className='badge badge-info p-2'),
             html.H3('Total Deaths Cases Worldwide :' + str(deaths_total) ,className='badge badge-danger p-2 '),
+            html.H3('Total Recovered Cases Worldwide :' + str(recov_total) ,className='badge badge-warning p-2 '),
             html.Div([
-                html.Div(className='progress-bar bg-danger', style={"width":percent}),
-                html.Div(className='progress-bar bg-info', style={"width":'75%'})                
+                html.Div(className='progress-bar bg-danger', style={"width":death_percent}),
+                html.Div(className='progress-bar bg-warning', style={"width":recov_percent}),
+                html.Div(className='progress-bar bg-info', style={"width":'100%'})                
             ], className='progress')
             ])
         ]

@@ -11,7 +11,10 @@ now = datetime.now()
 print(":: Running data update ... ",now.strftime("%d/%m/%Y %H:%M:%S"))
 output_directory="./dataset"
 
-files = ["/time_series_covid19_confirmed_global.csv", "/time_series_covid19_deaths_global.csv"]
+files = ["/time_series_covid19_confirmed_global.csv",
+         "/time_series_covid19_deaths_global.csv",
+         "/time_series_covid19_recovered_global.csv"
+         ]
          
 
 for x in files:
