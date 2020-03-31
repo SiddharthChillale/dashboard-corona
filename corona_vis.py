@@ -6,6 +6,7 @@ import dash_html_components as html
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
+import math
 import os
 from datetime import datetime
 
@@ -153,7 +154,6 @@ app.layout = html.Div([
         html.Div([
         dcc.Graph(id='increment-trend-graph')
         ],className='card-body')
-
     ], className="card border-info text-white bg-primary mb-3")
     ], className="p-3")
 
@@ -216,15 +216,15 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
         trace_list.append(trace)
     return trace_list
 
-def timeline_increment(timeline_data, selected_dropdown_value):
+def timeline_increment(timeline_data, original_data, selected_dropdown_value):
     trace_list = []
-    for value in selected_dropdown_value:
-        timeline = timeline_data[value]
-
+    for country in selected_dropdown_value:
+        timeline = timeline_data[country]
+        total_cases = original_data[country]
         trace = go.Scatter(
-                y=timeline.tail(21),
-                x=timeline.tail(21).index,
-                name=value,
+                y=timeline,
+                x=np.arange(total_cases.max()),
+                name=country,
                 mode='lines+markers',
                 line=dict(
                     width=5
@@ -257,22 +257,29 @@ def generate_increment_graph(selected_dropdown_value):
     print("\n:: For increment-trend-graph")
 
     clean_confirm_data = CLEAN_DATA.copy()
+    print(clean_confirm_data[0].head())
     confirmed_delta = clean_confirm_data[0].diff()
     confirmed_delta.iloc[0] = 0
     confirmed_delta_filter = confirmed_delta[selected_dropdown_value]
 
-    data = timeline_increment(confirmed_delta_filter, selected_dropdown_value)
+    data = timeline_increment(confirmed_delta_filter, clean_confirm_data[0], selected_dropdown_value)
 
     layout = dict(title = 'Confirmed Cases Increment Timeline',
                   paper_bgcolor = 'rgba(0,0,0,0)',
-                  plot_bgcolor='rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0.8)',
                   font= {
                     'color': '#ffffff'
                 },
-                  xaxis = dict(title='Days',
-                               showgrid=False
+                  autosize=True,
+                  height=900,
+                  xaxis = dict(title='Number of total cases',
+                               showgrid=False,
+                               type='log',
+                               autorange=True
                                 ),
-                  yaxis = dict(title='Number of New Confirm cases'))
+                  yaxis = dict( title='Number of New Confirm cases',
+                                type='log',
+                                autorange=True))
 
     figure = dict(data=data, layout=layout)
     return figure
@@ -320,8 +327,6 @@ def generate_table(selected_dropdown_value, max_rows=20):
     return [html.Tr([html.Th(col) for col in new_cases_filter.columns], className='table-info')] + [html.Tr([
         html.Td(new_cases_filter.iloc[i][col]) for col in new_cases_filter.columns
     ], className='table-secondary') for i in range(min(len(new_cases_filter), max_rows))]
-
-
 
 
 
@@ -375,4 +380,4 @@ def data_changer(n):
         ]
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
