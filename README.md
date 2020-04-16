@@ -7,11 +7,4 @@ Dashboard for visualising the reach of COVID-19 throughout the world in the moth
 3. Run `$python corona-vis.py`.
 4. Server will serve on the given local address.
 
-### To do in the app-
-~- Automatically fetch data once every 24 hours~
-~- Host it on Heroku~
-- Optimise the code
-- Organise the codebase
-- Mine for more data and more analyses
-- Setup handles for error handling or any other discrepancies (by email, or notifications)
-- Have a 404 page |
+

@@ -249,16 +249,20 @@ def timeline_increment(timeline_data, original_data, selected_dropdown_value):
         lenratio = len(total_cases_from_100)
         # print("This is lenratio - ", lenratio)        
 
-        timeline_from_100 = timeline.iloc[-lenratio:]
-
+        timeline_from_100 = timeline.iloc[-lenratio:].rolling(5).mean()
+        # timeline_from_100 = timeline.iloc[-lenratio:]
         timeline_from_100.replace(to_replace=0.0, inplace=True, method='bfill')
+        timeline_from_100.replace(to_replace=np.nan, inplace=True, method='bfill')
 
-        # print("This is timeline_from_100 ",timeline_from_100 )
+        # timeline_from_100.iloc[1] = timeline_from_100.iloc[2] 
+        # timeline_from_100.iloc[0] = timeline_from_100.iloc[1] 
+
+        # print("\n:: This is timeline_from_100 \n",timeline_from_100.iloc[:5] )
         # ratio = (timeline_from_100/total_cases_from_100)
         # print("ratio is ---",ratio) 
         trace = go.Scatter(
-                y=timeline_from_100,
-                x=total_cases_from_100,
+                y=timeline_from_100[5:],
+                x=total_cases_from_100[5:],
                 name=country,
                 mode='lines+markers',
                 line=dict(
@@ -282,7 +286,7 @@ def generate_increment_graph(selected_dropdown_value):
 
     data = timeline_increment(confirmed_delta_filter, clean_confirm_data[0], selected_dropdown_value)
 
-    layout = dict(title = 'Confirmed Cases Increment Timeline',
+    layout = dict(title = 'New Cases wrt to total number of Confirmed Cases after 100',
                   paper_bgcolor = 'rgba(0,0,0,0)',
                   plot_bgcolor='rgba(0,0,0,0.8)',
                   font= {
@@ -298,7 +302,7 @@ def generate_increment_graph(selected_dropdown_value):
                                nticks = 5,
                                autorange=True
                                 ),
-                  yaxis = dict( title='Number of New Confirm cases',
+                  yaxis = dict( title='Number of New Cases',
                                 type='log'))
 
     figure = dict(data=data, layout=layout)
