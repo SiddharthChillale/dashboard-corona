@@ -6,6 +6,7 @@ import dash_html_components as html
 import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
+import math
 import os
 from datetime import datetime
 
@@ -17,6 +18,7 @@ app = dash.Dash(__name__,
 server = app.server
 # app.title = 'COVID-19 Visualization'
 
+####################################################################################################################
 
 def get_clean_data():
     now = datetime.now()
@@ -75,6 +77,7 @@ NEW_CASES = get_new_cases()
 dict_products = create_dict_list_of_product()
 initial_val = NEW_CASES.sort_values(by="Confirmed", ascending=False).head(5).index
 
+####################################################################################################################
 
 app.layout = html.Div([
     html.Div([
@@ -153,10 +156,24 @@ app.layout = html.Div([
         html.Div([
         dcc.Graph(id='increment-trend-graph')
         ],className='card-body')
-
     ], className="card border-info text-white bg-primary mb-3")
     ], className="p-3")
 
+
+#####################################################################################################
+def timeline_confirmed(timeline_data, selected_dropdown_value):
+    trace_list = []
+    for value in selected_dropdown_value:
+        timeline = timeline_data[value]
+
+        trace = go.Scatter(
+                y=timeline.tail(21),
+                x=timeline.tail(21).index,
+                name=value,
+                mode='lines+markers'
+        )
+        trace_list.append(trace)
+    return trace_list
 
 @app.callback(Output('confirmed-trend-graph', 'figure'),
              [Input('product-dropdown', 'value')])
@@ -179,9 +196,27 @@ def generate_confirm_graph(selected_dropdown_value):
     figure = dict(data=data, layout=layout)
     return figure
 
+
+###################################################################################################
+
+def timeline_death(timeline_data, selected_dropdown_value):
+    trace_list = []
+    for value in selected_dropdown_value:
+        timeline = timeline_data[value]
+
+        trace = go.Scatter(
+                y=timeline.tail(21),
+                x=timeline.tail(21).index,
+                fill='tozeroy',
+                name=value,
+                mode='lines+markers'
+        )
+        trace_list.append(trace)
+    return trace_list
+
 @app.callback(Output('confirmed-death-graph', 'figure'),
              [Input('product-dropdown', 'value')])
-def generate_confirm_graph(selected_dropdown_value):
+def generate_death_graph(selected_dropdown_value):
     print("\n::For confirm-graph")
     clean_data = CLEAN_DATA.copy()
     death_filter = clean_data[1][selected_dropdown_value]
@@ -201,52 +236,36 @@ def generate_confirm_graph(selected_dropdown_value):
     return figure
 
 
+###################################################################################################
 
-def timeline_confirmed(timeline_data, selected_dropdown_value):
+def timeline_increment(timeline_data, original_data, selected_dropdown_value):
     trace_list = []
-    for value in selected_dropdown_value:
-        timeline = timeline_data[value]
+    for country in selected_dropdown_value:
+        timeline = timeline_data[country]
+        
+        # print(":: this is timeline : ", timeline)
+        total_cases = original_data[country]
+        total_cases_from_100 = total_cases[total_cases>100]
+        lenratio = len(total_cases_from_100)
+        # print("This is lenratio - ", lenratio)        
 
+        timeline_from_100 = timeline.iloc[-lenratio:]
+
+        timeline_from_100.replace(to_replace=0.0, inplace=True, method='bfill')
+
+        # print("This is timeline_from_100 ",timeline_from_100 )
+        # ratio = (timeline_from_100/total_cases_from_100)
+        # print("ratio is ---",ratio) 
         trace = go.Scatter(
-                y=timeline.tail(21),
-                x=timeline.tail(21).index,
-                name=value,
-                mode='lines+markers'
-        )
-        trace_list.append(trace)
-    return trace_list
-
-def timeline_increment(timeline_data, selected_dropdown_value):
-    trace_list = []
-    for value in selected_dropdown_value:
-        timeline = timeline_data[value]
-
-        trace = go.Scatter(
-                y=timeline.tail(21),
-                x=timeline.tail(21).index,
-                name=value,
+                y=timeline_from_100,
+                x=total_cases_from_100,
+                name=country,
                 mode='lines+markers',
                 line=dict(
                     width=5
                 )
         )
-        trace_list.append(trace)
-    return trace_list
 
-
-
-def timeline_death(timeline_data, selected_dropdown_value):
-    trace_list = []
-    for value in selected_dropdown_value:
-        timeline = timeline_data[value]
-
-        trace = go.Scatter(
-                y=timeline.tail(21),
-                x=timeline.tail(21).index,
-                fill='tozeroy',
-                name=value,
-                mode='lines+markers'
-        )
         trace_list.append(trace)
     return trace_list
 
@@ -261,24 +280,31 @@ def generate_increment_graph(selected_dropdown_value):
     confirmed_delta.iloc[0] = 0
     confirmed_delta_filter = confirmed_delta[selected_dropdown_value]
 
-    data = timeline_increment(confirmed_delta_filter, selected_dropdown_value)
+    data = timeline_increment(confirmed_delta_filter, clean_confirm_data[0], selected_dropdown_value)
 
     layout = dict(title = 'Confirmed Cases Increment Timeline',
                   paper_bgcolor = 'rgba(0,0,0,0)',
-                  plot_bgcolor='rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0.8)',
                   font= {
                     'color': '#ffffff'
                 },
-                  xaxis = dict(title='Days',
-                               showgrid=False
+                  autosize=True,
+                  height=900,
+                  xaxis = dict(title='Number of total cases',
+                               showgrid=False,
+                               type='log',
+                               tick0 = 2,
+                               dtick = 1,
+                               nticks = 5,
+                               autorange=True
                                 ),
-                  yaxis = dict(title='Number of New Confirm cases'))
+                  yaxis = dict( title='Number of New Confirm cases',
+                                type='log'))
 
     figure = dict(data=data, layout=layout)
     return figure
 
-
-
+###################################################################################################
 
 @app.callback(Output('pie-graph', 'figure'), [Input('product-dropdown', 'value')])
 def generate_pie_graph(selected_dropdown_value):
@@ -309,6 +335,7 @@ def pie_confirmed(selected_countries_filter, selected_dropdown_value):
                  hole=0.3 )
     return [pie]
 
+###################################################################################################
 
 @app.callback(Output('my-table', 'children'), [Input('product-dropdown', 'value')])
 def generate_table(selected_dropdown_value, max_rows=20):
@@ -321,8 +348,7 @@ def generate_table(selected_dropdown_value, max_rows=20):
         html.Td(new_cases_filter.iloc[i][col]) for col in new_cases_filter.columns
     ], className='table-secondary') for i in range(min(len(new_cases_filter), max_rows))]
 
-
-
+###################################################################################################
 
 
 @app.callback(Output('world-statistics', 'children'), 
@@ -349,6 +375,7 @@ def get_world_stat(n):
             ])
         ]
 
+###################################################################################################
 
 
 
@@ -373,6 +400,7 @@ def data_changer(n):
             html.H6('Updates every 12 hours',className='text-info')
             ])
         ]
+######################################################################
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
