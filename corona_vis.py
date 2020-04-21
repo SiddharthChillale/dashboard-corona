@@ -9,9 +9,14 @@ import plotly.graph_objs as go
 import math
 import os
 from datetime import datetime
+import logging
+
+# logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.INFO,
+#                     format=':: %(levelname)s: %(message)s :: %(asctime)s')
 
 import live_data
-print("\n:: Outside in the main now ::")
+logging.info(" Outside in the main now    ")
 
 app = dash.Dash(__name__,
                 external_stylesheets=[dbc.themes.LUX])
@@ -23,7 +28,7 @@ server = app.server
 def get_clean_data():
     now = datetime.now()
 
-    print("\n:: Getting clean data ...", now.strftime("%d/%m/%Y %H:%M:%S"))
+    logging.info(" Getting clean data     ")
     # datasets = ['./dataset/time_series_19-covid-Confirmed.csv', './dataset/time_series_19-covid-Deaths.csv', './dataset/time_series_19-covid-Recovered.csv']
 
     datasets = ["./dataset/time_series_covid19_confirmed_global.csv",
@@ -55,7 +60,7 @@ def get_new_cases():
     now = datetime.now()
 
     
-    print(":: Getting new cases ...", now.strftime("%d/%m/%Y %H:%M:%S"))
+    logging.info(" Getting new cases      ")
     clean_data = get_clean_data() ## get clean_data dataframe here
     new_cases = pd.DataFrame({"Confirmed": clean_data[0].iloc[-1]  - clean_data[0].iloc[-2],
                 "Deaths": clean_data[1].iloc[-1]  - clean_data[1].iloc[-2],
@@ -178,7 +183,7 @@ def timeline_confirmed(timeline_data, selected_dropdown_value):
 @app.callback(Output('confirmed-trend-graph', 'figure'),
              [Input('product-dropdown', 'value')])
 def generate_confirm_graph(selected_dropdown_value):
-    print("\n::For confirm-graph")
+    logging.info(" For confirm-graph        ")
     clean_data = CLEAN_DATA.copy()
     confirmed_filter = clean_data[0][selected_dropdown_value]
 
@@ -217,7 +222,7 @@ def timeline_death(timeline_data, selected_dropdown_value):
 @app.callback(Output('confirmed-death-graph', 'figure'),
              [Input('product-dropdown', 'value')])
 def generate_death_graph(selected_dropdown_value):
-    print("\n::For confirm-graph")
+    logging.info(" For death-graph          ")
     clean_data = CLEAN_DATA.copy()
     death_filter = clean_data[1][selected_dropdown_value]
 
@@ -243,11 +248,11 @@ def timeline_increment(timeline_data, original_data, selected_dropdown_value):
     for country in selected_dropdown_value:
         timeline = timeline_data[country]
         
-        # print(":: this is timeline : ", timeline)
+        # logging.info(":: this is timeline : ", timeline)
         total_cases = original_data[country]
         total_cases_from_100 = total_cases[total_cases>100]
         lenratio = len(total_cases_from_100)
-        # print("This is lenratio - ", lenratio)        
+        # logging.info("This is lenratio - ", lenratio)        
 
         timeline_from_100 = timeline.iloc[-lenratio:].rolling(5).mean()
         # timeline_from_100 = timeline.iloc[-lenratio:]
@@ -257,9 +262,9 @@ def timeline_increment(timeline_data, original_data, selected_dropdown_value):
         # timeline_from_100.iloc[1] = timeline_from_100.iloc[2] 
         # timeline_from_100.iloc[0] = timeline_from_100.iloc[1] 
 
-        # print("\n:: This is timeline_from_100 \n",timeline_from_100.iloc[:5] )
+        # logging.info(" :: This is timeline_from_100  ",timeline_from_100.iloc[:5] )
         # ratio = (timeline_from_100/total_cases_from_100)
-        # print("ratio is ---",ratio) 
+        # logging.info("ratio is ---",ratio) 
         trace = go.Scatter(
                 y=timeline_from_100[5:],
                 x=total_cases_from_100[5:],
@@ -277,7 +282,7 @@ def timeline_increment(timeline_data, original_data, selected_dropdown_value):
 @app.callback(Output('increment-trend-graph', 'figure'),
              [Input('product-dropdown', 'value')])
 def generate_increment_graph(selected_dropdown_value):
-    print("\n:: For increment-trend-graph")
+    logging.info(" For increment-trend-graph")
 
     clean_confirm_data = CLEAN_DATA.copy()
     confirmed_delta = clean_confirm_data[0].diff()
@@ -312,9 +317,9 @@ def generate_increment_graph(selected_dropdown_value):
 
 @app.callback(Output('pie-graph', 'figure'), [Input('product-dropdown', 'value')])
 def generate_pie_graph(selected_dropdown_value):
-    print("#################################################")
+    print("\n########################################################################\n")
 
-    print("\n:: For pie-graph")
+    logging.info(" For pie-graph            ")
 
     clean_data = CLEAN_DATA.copy()
     selected_countries_filter = clean_data[0][selected_dropdown_value].iloc[-1]
@@ -347,7 +352,7 @@ def generate_table(selected_dropdown_value, max_rows=20):
     new_cases_ff = new_cases.reset_index().set_index('index', drop=False)
     new_cases_filter = new_cases_ff.loc[selected_dropdown_value]
     new_cases_filter = new_cases_filter.sort_values(by='Confirmed', ascending=False)
-    # print(new_cases_filter)
+    # logging.info(new_cases_filter)
     return [html.Tr([html.Th(col) for col in new_cases_filter.columns], className='table-info')] + [html.Tr([
         html.Td(new_cases_filter.iloc[i][col]) for col in new_cases_filter.columns
     ], className='table-secondary') for i in range(min(len(new_cases_filter), max_rows))]
@@ -388,12 +393,13 @@ def get_world_stat(n):
 def data_changer(n):
     now = datetime.now()
   
-    print("\n:: Downloading ...") 
+    logging.info(" Downloading              ") 
     
-    # print("\nData Changing for ", n, " times")
+    # logging.info(" Data Changing for ", n, " times")
     os.system("python live_data.py")
 
-    print("\n:: Reading from datafiles ...", now.strftime("%d/%m/%Y %H:%M:%S"), "::")
+    print("\n")
+    logging.info(" Reading from datafiles ")
 
     CLEAN_DATA = get_clean_data()
     NEW_CASES = get_new_cases()
