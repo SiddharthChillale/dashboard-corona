@@ -2,13 +2,15 @@
 import wget
 import os
 from datetime import datetime
+import logging
 
 # datetime object containing current date and time
 now = datetime.now()
 # dd/mm/YY H:M:S
+logging.basicConfig(level=logging.DEBUG,
+                    format=':: %(levelname)s: %(message)s :: %(asctime)s')
 
-
-print(":: Running data update ... ",now.strftime("%d/%m/%Y %H:%M:%S"))
+logging.info(" Running data update ...  ")
 output_directory="./dataset"
 
 files = ["/time_series_covid19_confirmed_global.csv",
@@ -21,11 +23,11 @@ for x in files:
     try:
         final = output_directory + x
         os.remove(output_directory + x)
-        print(final)
+        logging.info(final)
         wget.download("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"+x, out=output_directory)
     except:
         wget.download("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"+x, out=output_directory)
-        print("::File (", x, ") not present")
+        logging.info("::File ("+ x + ") not present")
 
 
 # urls= ["https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv",
