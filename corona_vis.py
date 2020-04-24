@@ -11,10 +11,6 @@ import os
 from datetime import datetime
 import logging
 
-# logger = logging.getLogger(__name__)
-# logging.basicConfig(level=logging.INFO,
-#                     format=':: %(levelname)s: %(message)s :: %(asctime)s')
-
 import live_data
 logging.info(" Outside in the main now    ")
 
@@ -413,4 +409,4 @@ def data_changer(n):
 ######################################################################
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
